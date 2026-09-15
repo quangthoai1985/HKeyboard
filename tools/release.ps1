@@ -33,16 +33,33 @@ function Read-VersionProps {
     return $props
 }
 
+# versionCode PHAI khop cong thuc nay, va khop UpdateChecker.parseVersionCode()
+# trong app, neu khong app se khong nhan ra ban moi.
+function Get-VersionCode([string]$name) {
+    $clean = $name
+    $cut = $clean.IndexOf('-'); if ($cut -gt 0) { $clean = $clean.Substring(0, $cut) }
+    $cut = $clean.IndexOf('+'); if ($cut -gt 0) { $clean = $clean.Substring(0, $cut) }
+    $parts = $clean.Split('.')
+    $major = if ($parts.Length -gt 0) { [int]$parts[0] } else { 0 }
+    $minor = if ($parts.Length -gt 1) { [int]$parts[1] } else { 0 }
+    $patch = if ($parts.Length -gt 2) { [int]$parts[2] } else { 0 }
+    return $major * 10000 + $minor * 100 + $patch
+}
+
 function Write-VersionProps([int]$code, [string]$name) {
     $text = @"
 # Nguon duy nhat cho so hieu phien ban cua app.
 #
-# versionCode : so nguyen, BAT BUOC tang moi lan phat hanh (Android dung so nay
-#               de so sanh phien ban khi cap nhat).
-# versionName : chuoi hien thi cho nguoi dung, phai khop tag GitHub (v2.1 -> 2.1).
+# versionName : chuoi hien thi cho nguoi dung, PHAI khop tag GitHub (v2.1 -> 2.1).
 #
-# Sau khi sua file nay, chay:  gradlew.bat assembleRelease
-# Hoac dung script tu dong hoa:  powershell -File tools\release.ps1 -Bump
+# versionCode : Android dung so nay de so sanh khi cap nhat, BAT BUOC tang moi
+#               lan phat hanh. Quy uoc: major*10000 + minor*100 + patch.
+#               Phai khop voi UpdateChecker.parseVersionCode() va tag GitHub,
+#               neu khong app se khong nhan ra ban moi.
+#                  2.1   -> 20100
+#                  2.2   -> 20200
+#                  3.0   -> 30000
+#                  2.1.3 -> 20103
 
 versionCode=$code
 versionName=$name
@@ -66,7 +83,7 @@ $code = [int]$props['versionCode']
 $name = $props['versionName']
 
 if ($Bump) {
-    $code = $code + 1
+    # Tang minor: 2.1 -> 2.2
     $parts = $name.Split('.')
     $major = [int]$parts[0]
     $minor = if ($parts.Length -gt 1) { [int]$parts[1] } else { 0 }
@@ -77,6 +94,8 @@ if ($VersionName -ne '') {
 }
 
 if ($Bump -or $VersionName -ne '') {
+    # Luon tinh lai versionCode tu versionName de hai so khong bao gio lech nhau.
+    $code = Get-VersionCode $name
     Write-VersionProps -code $code -name $name
     "Da dat phien ban: v$name (versionCode $code)"
 }
