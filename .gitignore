@@ -1,0 +1,52 @@
+# =====================================================================
+#  TUYET DOI KHONG commit cac file sau len GitHub
+# =====================================================================
+# Khoa ky ung dung: mat file nay hoac mat khau = khong bao gio cap nhat
+# OTA duoc nua, nguoi dung phai go app roi cai lai.
+keystore.properties
+*.jks
+*.keystore
+
+# =====================================================================
+#  Android / Gradle
+# =====================================================================
+*.iml
+.gradle
+/local.properties
+/.idea
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+/app/build
+/app/release
+/app/debug
+
+# =====================================================================
+#  Ma nguon tham chieu cua UniKey (giay phep LGPL v2, KHONG thuoc du an nay)
+#  Tai lai bang:  powershell -File tools\fetch-unikey.ps1
+# =====================================================================
+/x-unikey-1.0.4/
+
+# =====================================================================
+#  Ket qua kiem chung (sinh lai duoc, khong can luu)
+# =====================================================================
+tools/build
+tools/ref/*.obj
+tools/ref/*.lib
+tools/ref/*.exp
+tools/ref/*.exe
+tools/ref/*_wrap.cpp
+tools/ref/out_*.txt
+tools/spec.txt
+
+# =====================================================================
+#  File tam
+# =====================================================================
+*.log
+*.tmp
+*~
+build_out.txt
+build_err.txt

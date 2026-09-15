@@ -1,0 +1,109 @@
+plugins {
+    id 'com.android.application'
+}
+
+// =====================================================================
+// So hieu phien ban: doc tu version.properties o goc du an (nguon duy nhat).
+// =====================================================================
+def versionProps = new Properties()
+def versionFile = rootProject.file('version.properties')
+if (versionFile.exists()) {
+    versionFile.withInputStream { versionProps.load(it) }
+}
+def appVersionCode = (versionProps.getProperty('versionCode') ?: '1') as int
+def appVersionName = versionProps.getProperty('versionName') ?: '1.0'
+
+// =====================================================================
+// Thong tin ky ban release: doc tu keystore.properties (KHONG commit file nay).
+// Neu khong co file thi roi ve chu ky debug de van build duoc.
+// =====================================================================
+def keystorePropsFile = rootProject.file('keystore.properties')
+def hasReleaseKeystore = keystorePropsFile.exists()
+def keystoreProps = new Properties()
+if (hasReleaseKeystore) {
+    keystorePropsFile.withInputStream { keystoreProps.load(it) }
+}
+
+// =====================================================================
+// Repo GitHub dung cho tinh nang tu cap nhat.
+// Co the ghi de khi build:  -PgithubRepo=owner/name
+// =====================================================================
+def githubRepo = (project.findProperty('githubRepo') ?: 'quangthoai1985/HKeyboard')
+def githubRepoParts = githubRepo.split('/')
+
+android {
+    namespace 'com.hkeyboard.vni'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.hkeyboard.vni"
+        minSdk 26
+        targetSdk 34
+        versionCode appVersionCode
+        versionName appVersionName
+
+        buildConfigField 'String', 'GITHUB_REPO_OWNER', "\"${githubRepoParts[0]}\""
+        buildConfigField 'String', 'GITHUB_REPO_NAME', "\"${githubRepoParts.length > 1 ? githubRepoParts[1] : 'HKeyboard'}\""
+    }
+
+    signingConfigs {
+        release {
+            if (hasReleaseKeystore) {
+                storeFile rootProject.file(keystoreProps.getProperty('storeFile'))
+                storePassword keystoreProps.getProperty('storePassword')
+                keyAlias keystoreProps.getProperty('keyAlias')
+                keyPassword keystoreProps.getProperty('keyPassword')
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            // Ky bang keystore rieng neu co; neu khong thi dung chu ky debug.
+            signingConfig hasReleaseKeystore ? signingConfigs.release : signingConfigs.debug
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    buildFeatures {
+        buildConfig true
+    }
+
+    applicationVariants.all { variant ->
+        variant.outputs.all {
+            if (variant.buildType.name == 'release') {
+                outputFileName = "Hkeyboard.apk"
+            }
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    testOptions {
+        unitTests {
+            // Cho phep unit test doc duoc cac hang so cua android.view.KeyEvent
+            // (moi phuong thuc khac tra ve gia tri mac dinh).
+            returnDefaultValues = true
+        }
+    }
+}
+
+dependencies {
+    // appcompat đã kéo theo androidx.core (chứa FileProvider) với phiên bản
+    // tương thích, nên KHÔNG khai báo androidx.core riêng — sẽ gây trùng lớp
+    // kotlin-stdlib.
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    testImplementation 'junit:junit:4.13.2'
+}
+
+// In ra so hieu phien ban moi khi build release cho de doi chieu.
+tasks.matching { it.name == 'assembleRelease' }.configureEach {
+    doFirst {
+        println "==> HKeyboard v${appVersionName} (versionCode ${appVersionCode})" +
+                (hasReleaseKeystore ? " - ky bang keystore release" : " - CANH BAO: dung chu ky debug")
+    }
+}

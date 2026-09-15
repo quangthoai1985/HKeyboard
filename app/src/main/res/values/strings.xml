@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">HKeyboard VNI</string>
+    <string name="ime_name">HKeyboard VNI</string>
+    <string name="subtype_vni">Tiếng Việt (VNI)</string>
+    <string name="settings_title">HKeyboard VNI</string>
+    <string name="status_enabled">✅ HKeyboard VNI đã được kích hoạt</string>
+    <string name="status_disabled">❌ HKeyboard VNI chưa được kích hoạt</string>
+    <string name="status_selected">✅ HKeyboard VNI đang là bàn phím mặc định</string>
+    <string name="status_not_selected">⚠️ HKeyboard VNI chưa được chọn làm bàn phím mặc định</string>
+    <string name="btn_enable_ime">Mở cài đặt bàn phím</string>
+    <string name="btn_select_ime">Chọn HKeyboard VNI</string>
+    <string name="guide_title">Hướng dẫn sử dụng</string>
+    <string name="guide_step1">Bước 1: Bấm \"Mở cài đặt bàn phím\" → bật HKeyboard VNI</string>
+    <string name="guide_step2">Bước 2: Bấm \"Chọn HKeyboard VNI\" → chọn làm bàn phím mặc định</string>
+    <string name="guide_step3">Bước 3: Kết nối Huawei Smart Keyboard và gõ tiếng Việt theo quy tắc UniKey</string>
+    <string name="vni_rules_title">Quy tắc gõ (UniKey – kiểu VNI)</string>
+    <string name="vni_rules">Bộ gõ dùng đúng quy tắc của UniKey (x-unikey 1.0.4).\n\nDấu thanh:\n1 = Sắc (á)   •   2 = Huyền (à)\n3 = Hỏi (ả)   •   4 = Ngã (ã)\n5 = Nặng (ạ)  •   0 = Xóa dấu\n\nDấu chữ:\n6 = Mũ (â ê ô) •   7 = Móc (ơ ư)\n8 = Trăng (ă)  •   9 = Đ (đ)\n\nVí dụ: Vie65t Nam → Việt Nam\n       d9u7o7ng → đường\n       hoa2 → hòa</string>
+
+    <!-- Phiên bản -->
+    <string name="version_label">Phiên bản %1$s (bản dựng %2$d)</string>
+    <string name="version_title">Phiên bản</string>
+
+    <!-- Tự cập nhật -->
+    <string name="btn_check_update">Kiểm tra bản cập nhật</string>
+    <string name="update_checking">⏳ Đang kiểm tra bản cập nhật…</string>
+    <string name="update_latest">✅ Bạn đang dùng bản mới nhất (%1$s)</string>
+    <string name="update_available">🎉 Có bản mới %1$s</string>
+    <string name="update_not_checked">Chưa kiểm tra được (không có mạng?)</string>
+    <string name="update_error">⚠️ %1$s</string>
+    <string name="update_dialog_title">Có bản cập nhật mới</string>
+    <string name="update_dialog_message">Phiên bản mới: %1$s\nPhiên bản đang dùng: %2$s</string>
+    <string name="update_now">Cập nhật ngay</string>
+    <string name="update_later">Để sau</string>
+    <string name="update_open_github">Mở trên GitHub</string>
+    <string name="update_no_apk">Bản phát hành này không kèm file APK. Đang mở trang GitHub…</string>
+    <string name="update_perm_title">Cần cấp quyền cài đặt</string>
+    <string name="update_perm_message">Để tự cập nhật, bạn cần cho phép HKeyboard VNI cài đặt ứng dụng. Bấm "Mở cài đặt" rồi bật "Cho phép từ nguồn này".</string>
+    <string name="update_perm_open">Mở cài đặt</string>
+    <string name="update_downloading">Đang tải bản cập nhật…</string>
+    <string name="update_downloaded">✅ Đã tải xong, đang mở trình cài đặt…</string>
+    <string name="update_install_failed">Không mở được trình cài đặt. Hãy tìm file APK trong thư mục tải về.</string>
+</resources>

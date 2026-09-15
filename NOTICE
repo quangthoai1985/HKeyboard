@@ -1,0 +1,36 @@
+HKeyboard VNI
+Copyright (C) 2026 quangthoai1985
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+=====================================================================
+GHI CHU VE GIAY PHEP CUA BEN THU BA
+=====================================================================
+
+src/main/java/com/hkeyboard/vni/UnikeyEngine.java la tac pham phai sinh
+(port sang Java) tu ma nguon UniKey 1.0.4:
+
+    UniKey - Vietnamese Keyboard
+    Copyright (C) 2000-2006 Pham Kim Long
+    https://sourceforge.net/projects/unikey/
+    Giay phep: GNU Lesser General Public License v2 (LGPL v2)
+
+Ban goc cua UniKey phat hanh theo LGPL v2; do do phan ma nguon bo go
+trong du an nay cung thuoc LGPL v2. Toan bo phan con lai cua ung dung
+phat hanh theo GPL v3 (xem phan dau file nay).
+
+Ma nguon UniKey goc KHONG duoc dua vao repo nay. De tai ve phuc vu viec
+kiem chung (tools/diff-test.ps1), chay:
+
+    powershell -NoProfile -ExecutionPolicy Bypass -File tools\fetch-unikey.ps1

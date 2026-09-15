@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Đường dẫn được phép chia sẻ qua FileProvider.
+  Chỉ mở đúng thư mục cache chứa APK cập nhật — không chia sẻ gì khác.
+-->
+<paths>
+    <cache-path
+        name="updates"
+        path="updates/" />
+</paths>
