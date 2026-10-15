@@ -20,7 +20,8 @@ $ErrorActionPreference = 'Stop'
 # NOTE: giu file nay ASCII thuan (PowerShell 5.1 doc file khong BOM theo ANSI).
 # =====================================================================
 
-$root = 'D:\App\HKeyboard'
+# Goc du an = thu muc cha cua tools\ (khong gan cung o dia).
+$root = Split-Path -Parent $PSScriptRoot
 $versionFile = Join-Path $root 'version.properties'
 $apkPath = Join-Path $root 'app\build\outputs\apk\release\Hkeyboard.apk'
 $env:JAVA_HOME = 'C:\Program Files\Android\Android Studio\jbr'
@@ -130,7 +131,8 @@ if (-not $SkipPush) {
 if (Test-Path $apkPath) { Remove-Item $apkPath -Force }
 Push-Location $root
 try {
-    & cmd /c "gradlew.bat assembleRelease --console=plain 2>&1" | Out-String | Write-Verbose
+    # .\ bat buoc khi bien NoDefaultCurrentDirectoryInExePath duoc dat.
+    & cmd /c ".\gradlew.bat assembleRelease --console=plain 2>&1" | Out-String | Write-Verbose
 } finally {
     Pop-Location
 }
