@@ -26,7 +26,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Bàn phím VNI cho Huawei Smart Keyboard"
+            android:text="@string/settings_subtitle"
             android:textSize="14sp"
             android:textColor="@color/text_secondary"
             android:gravity="center"
@@ -75,6 +75,62 @@
                 android:text="@string/version_title"
                 android:textSize="15sp"
                 android:textColor="@color/text_secondary" />
+
+        </LinearLayout>
+
+        <!-- Input Method Card -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/card_background"
+            android:padding="20dp"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/input_method_title"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary"
+                android:layout_marginBottom="8dp" />
+
+            <RadioGroup
+                android:id="@+id/rg_input_method"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/rb_telex"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:minHeight="48dp"
+                    android:text="@string/input_method_telex"
+                    android:textSize="16sp"
+                    android:textColor="@color/text_primary" />
+
+                <RadioButton
+                    android:id="@+id/rb_vni"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:minHeight="48dp"
+                    android:text="@string/input_method_vni"
+                    android:textSize="16sp"
+                    android:textColor="@color/text_primary" />
+
+            </RadioGroup>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/input_method_hint"
+                android:textSize="13sp"
+                android:textColor="@color/text_secondary"
+                android:layout_marginTop="4dp" />
 
         </LinearLayout>
 
@@ -186,7 +242,7 @@
 
         </LinearLayout>
 
-        <!-- VNI Rules Card -->
+        <!-- Typing Rules Card (đổi theo kiểu gõ đang chọn) -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -196,6 +252,7 @@
             android:layout_marginBottom="24dp">
 
             <TextView
+                android:id="@+id/tv_rules_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/vni_rules_title"
@@ -205,6 +262,7 @@
                 android:layout_marginBottom="12dp" />
 
             <TextView
+                android:id="@+id/tv_rules"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/vni_rules"

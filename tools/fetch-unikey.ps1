@@ -17,8 +17,8 @@ if (Test-Path (Join-Path $Destination 'src\ukengine\ukengine.cpp')) {
     exit 0
 }
 
-$base = "https://sourceforge.net/projects/unikey/files/UniKey%20X%20Input%20Method/$Version"
-$file = "unikey-$Version.tar.gz"
+$base = "https://sourceforge.net/projects/unikey/files/x-unikey/$Version"
+$file = "x-unikey-$Version.tar.bz2"
 $tmp = Join-Path $env:TEMP $file
 $url = "$base/$file/download"
 
@@ -34,11 +34,11 @@ $parent = Split-Path $Destination -Parent
 if (-not (Test-Path $parent)) { New-Item -ItemType Directory -Force -Path $parent | Out-Null }
 
 # tar co san trong Windows 10 tro len.
-& tar -xzf $tmp -C $parent
+& tar -xjf $tmp -C $parent
 if ($LASTEXITCODE -ne 0) { throw 'giai nen that bai' }
 
-$extracted = Join-Path $parent "unikey-$Version"
-if (Test-Path $extracted) {
+$extracted = Join-Path $parent "x-unikey-$Version"
+if ((Test-Path $extracted) -and ($extracted -ne $Destination)) {
     if (Test-Path $Destination) { Remove-Item $Destination -Recurse -Force }
     Move-Item $extracted $Destination
 }

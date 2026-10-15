@@ -11,7 +11,8 @@ package com.hkeyboard.vni;
  *                                    isValidCV / isValidVC / isValidCVC,
  *                                    getTonePosition ...)
  *   - src/ukengine/inputproc.cpp  -> phân loại phím (UkcMap) và bảng ánh xạ
- *                                    phương thức gõ VNI (VniMethodMapping)
+ *                                    phương thức gõ (TelexMethodMapping,
+ *                                    VniMethodMapping, useBuiltIn)
  *   - src/ukengine/vnlexi.h       -> bảng ký hiệu tiếng Việt (VnLexiName)
  *   - src/vnconv/data.cpp         -> bảng UnicodeTable + StdVnRootChar/StdVnNoTone
  *
@@ -24,6 +25,12 @@ package com.hkeyboard.vni;
  *   2 = Dấu huyền (Tone2)   7 = Dấu móc ơ ư (Hook-UO)
  *   3 = Dấu hỏi (Tone3)     8 = Dấu trăng ă (Bowl)
  *   4 = Dấu ngã (Tone4)     9 = Đ (D-Mark)
+ *
+ * PHƯƠNG THỨC GÕ TELEX (theo TelexMethodMapping trong inputproc.cpp):
+ *   s = sắc   f = huyền   r = hỏi   x = ngã   j = nặng   z = bỏ dấu
+ *   aa = â    ee = ê      oo = ô    dd = đ
+ *   w  = dấu móc/trăng (aw = ă, ow = ơ, uw = ư, uow = ươ); đứng một mình = ư
+ *   [ = ơ     ] = ư       { = Ơ     } = Ư
  *
  * Cách dùng (giống đúng hợp đồng của UkEngine::process):
  * <pre>
@@ -480,7 +487,7 @@ public final class UnikeyEngine {
     private static final int[] UKC_MAP = new int[256];
 
     // ==================================================================
-    // 8. Phương thức gõ VNI — VniMethodMapping (inputproc.cpp)
+    // 8. Phương thức gõ — UkKeyEvName + *MethodMapping (inputproc.cpp)
     // ==================================================================
     private static final int vneRoofAll = 0, vneRoof_a = 1, vneRoof_e = 2, vneRoof_o = 3,
             vneHookAll = 4, vneHook_uo = 5, vneHook_u = 6, vneHook_o = 7, vneBowl = 8,
@@ -493,7 +500,48 @@ public final class UnikeyEngine {
             vneNormal = 19,
             vneCount = 20;
 
-    private static final int[] VNI_KEY_ACTION = new int[256];
+    /** Kiểu gõ (UkInputMethod trong keycons.h — chỉ dùng hai kiểu). */
+    public enum InputMethod {
+        TELEX,
+        VNI
+    }
+
+    /**
+     * TelexMethodMapping (inputproc.cpp): từng cặp {phím, hành động}.
+     * Hành động {@code vneCount + vnSym} nghĩa là phím được ánh xạ thẳng
+     * thành ký tự đó (vneMapChar), ví dụ '[' -> ơ.
+     */
+    private static final int[][] TELEX_METHOD_MAPPING = {
+            {'Z', vneTone0},
+            {'S', vneTone1},
+            {'F', vneTone2},
+            {'R', vneTone3},
+            {'X', vneTone4},
+            {'J', vneTone5},
+            {'W', vne_telex_w},
+            {'A', vneRoof_a},
+            {'E', vneRoof_e},
+            {'O', vneRoof_o},
+            {'D', vneDd},
+            {'[', vneCount + vnl_oh},
+            {']', vneCount + vnl_uh},
+            {'{', vneCount + vnl_Oh},
+            {'}', vneCount + vnl_Uh},
+    };
+
+    /** VniMethodMapping (inputproc.cpp). */
+    private static final int[][] VNI_METHOD_MAPPING = {
+            {'0', vneTone0},
+            {'1', vneTone1},
+            {'2', vneTone2},
+            {'3', vneTone3},
+            {'4', vneTone4},
+            {'5', vneTone5},
+            {'6', vneRoofAll},
+            {'7', vneHook_uo},
+            {'8', vneBowl},
+            {'9', vneDd},
+    };
 
     // ==================================================================
     // 9. Ánh xạ ký tự ASCII/Latin-1 -> VnLexiName (IsoVnLexiMap)
@@ -513,7 +561,6 @@ public final class UnikeyEngine {
 
     static {
         setupUkcMap();
-        setupVniKeyMap();
         setupIsoVnLexiMap();
         setupStdVnNoTone();
         engineClassInit();
@@ -550,14 +597,24 @@ public final class UnikeyEngine {
     }
 
     //--------------------------------------------------------------
-    private static void setupVniKeyMap() {
-        // Bảng VniMethodMapping
-        final int[] keys = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
-        final int[] actions = {vneTone0, vneTone1, vneTone2, vneTone3, vneTone4,
-                vneTone5, vneRoofAll, vneHook_uo, vneBowl, vneDd};
-        java.util.Arrays.fill(VNI_KEY_ACTION, vneNormal);
-        for (int i = 0; i < keys.length; i++) {
-            VNI_KEY_ACTION[keys[i]] = actions[i];
+    /**
+     * UkInputProcessor::useBuiltIn (inputproc.cpp): dựng bảng phím -> hành
+     * động. Phím chữ có hành động thông thường được gán cho cả chữ HOA lẫn
+     * chữ thường; phím ánh xạ ký tự ('[' -> ơ...) chỉ gán đúng phím đó.
+     */
+    private static void useBuiltIn(int[][] mapping, int[] keyMap) {
+        java.util.Arrays.fill(keyMap, vneNormal); // UkResetKeyMap
+        for (int[] item : mapping) {
+            int key = item[0];
+            int action = item[1];
+            keyMap[key] = action;
+            if (action < vneCount) {
+                if (key >= 'a' && key <= 'z') {
+                    keyMap[key - 'a' + 'A'] = action;
+                } else if (key >= 'A' && key <= 'Z') {
+                    keyMap[key - 'A' + 'a'] = action;
+                }
+            }
         }
     }
 
@@ -910,19 +967,63 @@ public final class UnikeyEngine {
     private boolean toEscape = false;
     private boolean vietKey = true;
 
+    /** Bảng phím -> hành động của kiểu gõ đang dùng (m_keyMap trong inputproc.h). */
+    private final int[] keyMap = new int[256];
+    private InputMethod inputMethod;
+
+    /**
+     * Biến {@code static bool usedAsMapChar} bên trong
+     * UkEngine::processTelexW. Giống C++, KHÔNG bị xoá khi reset(): phím 'w'
+     * vừa được dùng làm "ư" thì lần gõ 'w' kế tiếp sẽ thử làm "ư" trước
+     * (nhờ đó "ww" -> "w").
+     */
+    private boolean usedAsMapChar = false;
+
+    /** Trạng thái CapsLock (UnikeySetCapsState / m_keyCheckFunc). */
+    private boolean capsLockOn = false;
+
     public UnikeyEngine() {
         this(new Options());
     }
 
     public UnikeyEngine(Options options) {
+        this(options, InputMethod.VNI);
+    }
+
+    public UnikeyEngine(Options options, InputMethod inputMethod) {
         this.options = options;
         for (int i = 0; i < buffer.length; i++) {
             buffer[i] = new WordInfo();
         }
+        setInputMethod(inputMethod);
     }
 
     public Options getOptions() {
         return options;
+    }
+
+    /**
+     * Đổi kiểu gõ — UnikeySetInputMethod (unikey.cpp): nạp bảng phím mới rồi
+     * reset engine.
+     */
+    public void setInputMethod(InputMethod method) {
+        inputMethod = (method == null) ? InputMethod.VNI : method;
+        useBuiltIn(inputMethod == InputMethod.TELEX
+                ? TELEX_METHOD_MAPPING : VNI_METHOD_MAPPING, keyMap);
+        reset();
+    }
+
+    public InputMethod getInputMethod() {
+        return inputMethod;
+    }
+
+    /**
+     * Báo trạng thái CapsLock của phím sắp xử lý — tương đương
+     * UnikeySetCapsState (unikey.cpp). Chỉ ảnh hưởng tới phím ánh xạ ký tự
+     * của Telex ({@code w [ ] { }}).
+     */
+    public void setCapsLockOn(boolean capsLockOn) {
+        this.capsLockOn = capsLockOn;
     }
 
     /** vietKey: bật/tắt chế độ gõ tiếng Việt. */
@@ -1047,7 +1148,13 @@ public final class UnikeyEngine {
         int vStart = vEnd - (vseqLen(vs) - 1);
         int newVs = buffer[current - 1].vseq;
         int curTonePos = vStart + getTonePosition(vs, vEnd == current);
-        int newTonePos = vStart + getTonePosition(newVs, true);
+        // Ô trước có thể là dấu câu ("(a" rồi Backspace): C++ đọc vseq cũ còn
+        // sót trong ô đó (có thể là vs_nil -> VSeqList[-1]). Khi đó từ hiện
+        // tại chỉ có một nguyên âm nên curTonePos == current và nhánh "xoá
+        // thường" bên dưới luôn được chọn — giá trị newTonePos không ảnh
+        // hưởng kết quả. Chỉ cần tránh tra bảng với vs_nil.
+        int newTonePos = (newVs == vs_nil)
+                ? curTonePos : vStart + getTonePosition(newVs, true);
         int tone = buffer[curTonePos].tone;
 
         if (tone == 0 || curTonePos == newTonePos
@@ -1118,7 +1225,7 @@ public final class UnikeyEngine {
             ev.chType = ukcNonVn;
         } else {
             ev.chType = UKC_MAP[keyCode];
-            ev.evType = VNI_KEY_ACTION[keyCode];
+            ev.evType = keyMap[keyCode];
             if (ev.evType >= vneTone0 && ev.evType <= vneTone5) {
                 ev.tone = ev.evType - vneTone0;
             }
@@ -1157,9 +1264,7 @@ public final class UnikeyEngine {
             case vneTone5:
                 return processTone(ev);
             case vne_telex_w:
-                // Telex 'w' -> coi như Hook-All
-                ev.evType = vneHookAll;
-                return processHook(ev);
+                return processTelexW(ev);
             case vneMapChar:
                 return processMapChar(ev);
             case vneEscChar:
@@ -1714,11 +1819,26 @@ public final class UnikeyEngine {
         return processAppend(ev);
     }
 
+    /** changeCase (ukengine.cpp): đảo HOA <-> thường. */
+    private static int changeCase(int x) {
+        if (x == vnl_nonVnChar) {
+            return x;
+        }
+        if ((x & 0x01) == 0) {
+            return x + 1;
+        }
+        return x - 1;
+    }
+
     //=================================================================
-    // processMapChar (ukengine.cpp) — dùng cho Telex W (không dùng ở VNI,
-    // giữ lại cho đầy đủ cấu trúc của engine)
+    // processMapChar (ukengine.cpp) — phím ánh xạ thẳng thành ký tự
+    // (Telex: '[' -> ơ, ']' -> ư, 'w' đứng một mình -> ư)
     //=================================================================
     private int processMapChar(UkKeyEvent ev) {
+        if (capsLockOn) {
+            ev.vnSym = changeCase(ev.vnSym);
+        }
+
         int ret = processAppend(ev);
         if (!vietKey) {
             return ret;
@@ -1779,6 +1899,59 @@ public final class UnikeyEngine {
             return 1;
         }
         return ret;
+    }
+
+    //=================================================================
+    // processTelexW (ukengine.cpp) — phím 'w' của Telex: thử làm dấu móc
+    // (aw -> ă, ow -> ơ, uw -> ư), nếu không được thì làm chữ "ư".
+    //=================================================================
+    private int processTelexW(UkKeyEvent ev) {
+        if (!vietKey) {
+            return processAppend(ev);
+        }
+
+        int ret;
+        if (usedAsMapChar) {
+            ev.evType = vneMapChar;
+            ev.vnSym = isUpperAscii(ev.keyCode) ? vnl_Uh : vnl_uh;
+            if (capsLockOn) {
+                ev.vnSym = changeCase(ev.vnSym);
+            }
+            ev.chType = ukcVn;
+            ret = processMapChar(ev);
+            if (ret == 0) {
+                if (current >= 0) {
+                    current--;
+                }
+                usedAsMapChar = false;
+                ev.evType = vneHookAll;
+                return processHook(ev);
+            }
+            return ret;
+        }
+
+        ev.evType = vneHookAll;
+        usedAsMapChar = false;
+        ret = processHook(ev);
+        if (ret == 0) {
+            if (current >= 0) {
+                current--;
+            }
+            ev.evType = vneMapChar;
+            ev.vnSym = isUpperAscii(ev.keyCode) ? vnl_Uh : vnl_uh;
+            if (capsLockOn) {
+                ev.vnSym = changeCase(ev.vnSym);
+            }
+            ev.chType = ukcVn;
+            usedAsMapChar = true;
+            return processMapChar(ev);
+        }
+        return ret;
+    }
+
+    /** isupper() của C (locale "C"): chỉ A-Z. */
+    private static boolean isUpperAscii(int c) {
+        return c >= 'A' && c <= 'Z';
     }
 
     //=================================================================
@@ -1846,8 +2019,11 @@ public final class UnikeyEngine {
                 entry.vnSym = vnToLower(ev.vnSym);
                 entry.tone = 0;
                 entry.caps = (entry.vnSym != ev.vnSym) ? 1 : 0;
-                markChange(current);
-                return 1;
+                // C++: chỉ trả về 1 khi bảng mã đầu ra là CONV_CHARSET_UNI_CSTRING;
+                // với Unicode thì trả về 0 (người gọi tự chèn ký tự gốc).
+                // processTelexW dựa vào giá trị 0 này để biết 'w' không làm
+                // được dấu móc và chuyển sang làm chữ "ư".
+                return 0;
             }
 
             case ukcVn: {

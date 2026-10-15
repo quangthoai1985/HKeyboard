@@ -15,6 +15,15 @@ import java.nio.charset.StandardCharsets;
  * Moi dong stdin: mot chuoi phim ('\b' = backspace).
  * Moi dong stdout: <raw>\t<field>\t<U+XXXX ...>
  * Neu mot dong gay loi, in ra <raw>\t!ERROR: ...
+ *
+ * Bien moi truong (giong ref.exe):
+ *   UK_TELEX=1  -> kieu go Telex (mac dinh VNI)
+ *   UK_CAPS=1   -> gia lap CapsLock dang bat
+ *   UK_NOSPELL=1, UK_MODERN=1, UK_NOMARK=1 -> doi tuy chon cua UniKey
+ *
+ * Giong ref.exe, MOT engine duoc dung cho ca file va reset() truoc moi dong:
+ * bien static usedAsMapChar trong processTelexW cua C++ khong bi reset, nen
+ * phai giu nguyen engine thi hai ben moi so sanh duoc.
  */
 public class DiffDriver {
     private static final int WRAP_BASE = 0xE000;
@@ -22,7 +31,19 @@ public class DiffDriver {
     private static int WRAP_COUNT = 0;
     private static final int[] WRAP_MAP = new int[WRAP_MAX];
 
+    private static UnikeyEngine engine;
+
     public static void main(String[] args) throws Exception {
+        UnikeyEngine.InputMethod im = "1".equals(System.getenv("UK_TELEX"))
+                ? UnikeyEngine.InputMethod.TELEX : UnikeyEngine.InputMethod.VNI;
+        UnikeyEngine.Options options = new UnikeyEngine.Options();
+        options.spellCheckEnabled = !"1".equals(System.getenv("UK_NOSPELL"));
+        options.modernStyle = "1".equals(System.getenv("UK_MODERN"));
+        options.freeMarking = !"1".equals(System.getenv("UK_NOMARK"));
+        engine = new UnikeyEngine(options, im);
+        engine.setCapsLockOn("1".equals(System.getenv("UK_CAPS")));
+        engine.setKeyWrapper(new Unwrapper());
+
         PrintStream out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
         BufferedReader in = new BufferedReader(
                 new InputStreamReader(System.in, StandardCharsets.UTF_8));
@@ -40,8 +61,8 @@ public class DiffDriver {
     }
 
     private static String runOne(String line) {
-        UnikeyEngine e = new UnikeyEngine();
-        e.setKeyWrapper(new Unwrapper());
+        UnikeyEngine e = engine;
+        e.reset();
         StringBuilder field = new StringBuilder();
         StringBuilder raw = new StringBuilder();
         for (int i = 0; i < line.length(); i++) {

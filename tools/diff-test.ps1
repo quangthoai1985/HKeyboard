@@ -1,6 +1,8 @@
 param(
-    [string]$Corpus = 'D:\App\HKeyboard\tools\ref\corpus_big.txt',
-    [int]$MaxReport = 40
+    [string]$Corpus = '',
+    [int]$MaxReport = 40,
+    # -Telex: compare the Telex input method (default: VNI)
+    [switch]$Telex
 )
 $ErrorActionPreference = 'Stop'
 # =====================================================================
@@ -18,6 +20,7 @@ $ErrorActionPreference = 'Stop'
 # BOM-less file as ANSI.
 #
 # Run: powershell -NoProfile -ExecutionPolicy Bypass -File tools\diff-test.ps1
+#      powershell -NoProfile -ExecutionPolicy Bypass -File tools\diff-test.ps1 -Telex
 # =====================================================================
 $root = 'D:\App\HKeyboard'
 $refExe = Join-Path $root 'tools\ref\ref.exe'
@@ -30,6 +33,20 @@ if (-not (Test-Path $refExe)) {
 }
 if (-not (Test-Path $javaExe)) {
     throw "JDK not found at $javaExe"
+}
+
+# Both ref.exe and DiffDriver read UK_TELEX (child processes inherit it).
+if ($Telex) {
+    $env:UK_TELEX = '1'
+    if ($Corpus -eq '') { $Corpus = Join-Path $root 'tools\ref\corpus_telex.txt' }
+    if (-not (Test-Path $Corpus)) {
+        "Generating $Corpus ..."
+        & $javaExe (Join-Path $root 'tools\GenTelexCorpus.java') $Corpus
+        if ($LASTEXITCODE -ne 0) { throw 'GenTelexCorpus failed' }
+    }
+} else {
+    Remove-Item Env:UK_TELEX -ErrorAction SilentlyContinue
+    if ($Corpus -eq '') { $Corpus = Join-Path $root 'tools\ref\corpus_big.txt' }
 }
 
 # 1. Compile the Java side

@@ -39,6 +39,14 @@ void CMacroTable::writeHeader(FILE *f) { (void)f; }
 static UkSharedMem ctrl;
 static UkEngine engine;
 
+// UK_CAPS=1 -> gia lap CapsLock dang bat (UnikeyCheckKbCase trong unikey.cpp).
+static int g_capsLockOn = 0;
+static void checkKbCase(int *pShiftPressed, int *pCapsLockOn)
+{
+    *pShiftPressed = 0;
+    *pCapsLockOn = g_capsLockOn;
+}
+
 #define WRAP_BASE 0xE000
 // Phai nho hon 8192 vi U+E000+8192 tran khoi pham vi char cua Java (0..65535).
 #define WRAP_MAX  4096
@@ -66,11 +74,19 @@ static void initEngine()
     if ((env = getenv("UK_NOMARK")) != NULL && env[0] == '1')
         ctrl.options.freeMarking = 0;
     ctrl.input.init();
-    ctrl.input.setIM(UkVni);
+    // Mac dinh VNI; UK_TELEX=1 -> kieu go Telex (TelexMethodMapping).
+    if ((env = getenv("UK_TELEX")) != NULL && env[0] == '1')
+        ctrl.input.setIM(UkTelex);
+    else
+        ctrl.input.setIM(UkVni);
     ctrl.macStore.init();
 
     SetupUnikeyEngine();
     engine.setCtrlInfo(&ctrl);
+    if ((env = getenv("UK_CAPS")) != NULL && env[0] == '1') {
+        g_capsLockOn = 1;
+        engine.setCheckKbCaseFunc(&checkKbCase);
+    }
     engine.reset();
 }
 

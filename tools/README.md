@@ -19,12 +19,19 @@ chi tiết nhỏ (chỉ số bảng, quy tắc đặt dấu, xử lý backspace.
 | `ref/build.bat` | Biên dịch `ref/ref.exe` (cần Visual Studio Build Tools) |
 | `ref/makewrap.ps1` | Sinh `ukengine_wrap.cpp` = bản sao `ukengine.cpp` có gắn hook wrapper |
 | `ref/makeinputproc.ps1` | Sinh `inputproc_wrap.cpp` = bản sao `inputproc.cpp` có gắn hook wrapper |
-| `ref/corpus_big.txt` | 68.495 chuỗi phím để kiểm tra |
+| `ref/makewrap.py` | Bản Linux/macOS của hai script trên |
+| `ref/corpus_big.txt` | 68.495 chuỗi phím VNI để kiểm tra |
+| `ref/corpus_telex.txt` | 397.156 chuỗi phím Telex (không commit — sinh bằng `GenTelexCorpus.java`) |
 | `ref/cases.txt` | Các ca tiêu biểu (dùng để tra kết quả bằng mắt) |
 | `DiffDriver.java` | Harness chạy bộ máy Java, cùng định dạng đầu ra |
-| `EngineTest.java` | Bộ test đọc được (75 ca), mọi giá trị mong đợi lấy từ UniKey gốc |
+| `EngineTest.java` | Bộ test đọc được (75 ca VNI), mọi giá trị mong đợi lấy từ UniKey gốc |
 | `gen-corpus.ps1` | Sinh lại `ref/corpus_big.txt` |
-| `diff-test.ps1` | Chạy cả hai bản trên corpus và báo cáo khác biệt |
+| `GenTelexCorpus.java` | Sinh `ref/corpus_telex.txt` (`java tools/GenTelexCorpus.java <file>`) |
+| `diff-test.ps1` | Windows: chạy cả hai bản trên corpus và báo cáo khác biệt (`-Telex` cho Telex) |
+| `diff-test.sh` | Linux/macOS: tải UniKey, biên dịch, đối chiếu VNI + Telex (`--all` cho mọi chế độ) |
+
+Bộ test JUnit của app (`app/src/test/.../UnikeyEngineTest.java`) có thêm các ca
+Telex, CapsLock và chuyển kiểu gõ — giá trị mong đợi cũng lấy từ UniKey gốc.
 
 ## Kỹ thuật "wrapper"
 
@@ -98,9 +105,22 @@ pOpt->autoNonVnRestore   = 0;
 ```
 
 `HKeyboardService` dùng đúng bộ mặc định này. Muốn xem hành vi khi đổi tuỳ chọn,
-đặt biến môi trường trước khi chạy `ref.exe`:
+đặt biến môi trường trước khi chạy `ref.exe` (DiffDriver đọc cùng các biến này):
 
-* `UK_NOSPELL=1` — tắt kiểm tra chính tả (khi đó `d9u7o7ng` → `đường`,
-  `ngu7o7i` → `người`, nhưng `java8` → `javă`).
+* `UK_TELEX=1` — kiểu gõ Telex (mặc định VNI).
+* `UK_CAPS=1` — giả lập CapsLock đang bật (ảnh hưởng phím `w [ ] { }` của Telex).
+* `UK_NOSPELL=1` — tắt kiểm tra chính tả (khi đó `java8` → `javă`).
 * `UK_MODERN=1` — kiểu mới (`hóa` thay vì `hòa`).
 * `UK_NOMARK=1` — tắt FreeMarking.
+
+## Ghi chú về Telex
+
+* `processTelexW` của C++ dùng biến `static bool usedAsMapChar` — **không** bị
+  xoá khi `reset()`. Bản Java giữ đúng như vậy (trường của engine, không reset),
+  và `DiffDriver` dùng một engine cho cả file giống `ref.exe`.
+* `processAppend` của C++ trả về 0 cho ký tự ngoài tiếng Việt khi bảng mã đầu ra
+  là Unicode; `processTelexW` dựa vào giá trị này để quyết định `w` → `ư`.
+* `processBackspace` của C++ đọc `vseq` của ô đứng trước kể cả khi ô đó là dấu
+  câu (giá trị cũ còn sót). Bản Java tránh tra bảng với `vs_nil` (trước đây gây
+  crash khi gõ `(a` rồi Backspace); kết quả vẫn giống C++ vì trong trường hợp
+  này giá trị đó không được dùng.
