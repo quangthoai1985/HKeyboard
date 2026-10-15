@@ -1,8 +1,10 @@
 package com.hkeyboard.vni;
 
+import android.content.SharedPreferences;
 import android.inputmethodservice.InputMethodService;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -23,8 +25,18 @@ import android.view.inputmethod.InputConnection;
  */
 public class HKeyboardService extends InputMethodService {
 
+    private static final String TAG = "HKeyboard";
+
     /** Bộ máy gõ tiếng Việt theo quy tắc UniKey. */
     private UnikeyEngine engine;
+
+    /** Đổi kiểu gõ (Telex/VNI) trong màn hình thiết lập -> áp dụng ngay. */
+    private final SharedPreferences.OnSharedPreferenceChangeListener prefsListener =
+            (prefs, key) -> {
+                if (ImePrefs.KEY_INPUT_METHOD.equals(key)) {
+                    applyInputMethod();
+                }
+            };
 
     /** Bật/tắt gõ tiếng Việt (mặc định bật). */
     private boolean vietnameseMode = true;
@@ -49,7 +61,22 @@ public class HKeyboardService extends InputMethodService {
         options.spellCheckEnabled = true;  // kiểm tra chính tả
         options.macroEnabled = false;
         options.autoNonVnRestore = false;
-        engine = new UnikeyEngine(options);
+        engine = new UnikeyEngine(options, ImePrefs.inputMethod(this));
+        ImePrefs.get(this).registerOnSharedPreferenceChangeListener(prefsListener);
+    }
+
+    @Override
+    public void onDestroy() {
+        ImePrefs.get(this).unregisterOnSharedPreferenceChangeListener(prefsListener);
+        super.onDestroy();
+    }
+
+    /** Nạp kiểu gõ đang chọn vào engine (engine tự reset nếu có thay đổi). */
+    private void applyInputMethod() {
+        UnikeyEngine.InputMethod method = ImePrefs.inputMethod(this);
+        if (engine.getInputMethod() != method) {
+            engine.setInputMethod(method);
+        }
     }
 
     @Override
@@ -78,6 +105,8 @@ public class HKeyboardService extends InputMethodService {
         super.onStartInput(attribute, restarting);
         lastKeyConsumed = false;
         lastConsumedKeyCode = -1;
+        // Dự phòng khi listener bị lỡ (ví dụ service được tạo lại).
+        applyInputMethod();
         if (!restarting) {
             engine.reset();
         }
@@ -122,6 +151,18 @@ public class HKeyboardService extends InputMethodService {
             return super.onKeyDown(keyCode, event);
         }
 
+        try {
+            return handleKeyDown(keyCode, event);
+        } catch (RuntimeException e) {
+            // Lưới an toàn: lỗi trong bộ gõ không được làm sập bàn phím.
+            // Reset trạng thái rồi để hệ thống xử lý phím như bình thường.
+            Log.e(TAG, "Loi bo go, reset engine", e);
+            engine.reset();
+            return super.onKeyDown(keyCode, event);
+        }
+    }
+
+    private boolean handleKeyDown(int keyCode, KeyEvent event) {
         // Backspace: engine tự đồng bộ trạng thái với ô nhập liệu
         if (keyCode == KeyEvent.KEYCODE_DEL) {
             UnikeyEngine.Result result = engine.processBackspace();
@@ -156,6 +197,8 @@ public class HKeyboardService extends InputMethodService {
             return super.onKeyDown(keyCode, event);
         }
 
+        // Telex dùng trạng thái CapsLock cho các phím w [ ] { } (giống UniKey).
+        engine.setCapsLockOn(event.isCapsLockOn());
         UnikeyEngine.Result result = engine.process(ch);
         if (!result.handled) {
             // Ký tự điều khiển: để hệ thống xử lý.

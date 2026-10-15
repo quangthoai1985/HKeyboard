@@ -2,8 +2,9 @@
 <resources>
     <string name="app_name">HKeyboard VNI</string>
     <string name="ime_name">HKeyboard VNI</string>
-    <string name="subtype_vni">Tiếng Việt (VNI)</string>
+    <string name="subtype_vni">Tiếng Việt (Telex / VNI)</string>
     <string name="settings_title">HKeyboard VNI</string>
+    <string name="settings_subtitle">Bàn phím tiếng Việt (Telex / VNI) cho bàn phím rời</string>
     <string name="status_enabled">✅ HKeyboard VNI đã được kích hoạt</string>
     <string name="status_disabled">❌ HKeyboard VNI chưa được kích hoạt</string>
     <string name="status_selected">✅ HKeyboard VNI đang là bàn phím mặc định</string>
@@ -15,7 +16,15 @@
     <string name="guide_step2">Bước 2: Bấm \"Chọn HKeyboard VNI\" → chọn làm bàn phím mặc định</string>
     <string name="guide_step3">Bước 3: Kết nối Huawei Smart Keyboard và gõ tiếng Việt theo quy tắc UniKey</string>
     <string name="vni_rules_title">Quy tắc gõ (UniKey – kiểu VNI)</string>
-    <string name="vni_rules">Bộ gõ dùng đúng quy tắc của UniKey (x-unikey 1.0.4).\n\nDấu thanh:\n1 = Sắc (á)   •   2 = Huyền (à)\n3 = Hỏi (ả)   •   4 = Ngã (ã)\n5 = Nặng (ạ)  •   0 = Xóa dấu\n\nDấu chữ:\n6 = Mũ (â ê ô) •   7 = Móc (ơ ư)\n8 = Trăng (ă)  •   9 = Đ (đ)\n\nVí dụ: Vie65t Nam → Việt Nam\n       d9u7o7ng → đường\n       hoa2 → hòa</string>
+    <string name="vni_rules">Bộ gõ dùng đúng quy tắc của UniKey (x-unikey 1.0.4).\n\nDấu thanh:\n1 = Sắc (á)   •   2 = Huyền (à)\n3 = Hỏi (ả)   •   4 = Ngã (ã)\n5 = Nặng (ạ)  •   0 = Xóa dấu\n\nDấu chữ:\n6 = Mũ (â ê ô) •   7 = Móc (ơ ư)\n8 = Trăng (ă)  •   9 = Đ (đ)\n\nVí dụ: Vie65t Nam → Việt Nam\n       d9u7o7ng2 → đường\n       hoa2 → hòa</string>
+    <string name="telex_rules_title">Quy tắc gõ (UniKey – kiểu Telex)</string>
+    <string name="telex_rules">Bộ gõ dùng đúng quy tắc của UniKey (x-unikey 1.0.4).\n\nDấu thanh:\ns = Sắc (á)   •   f = Huyền (à)\nr = Hỏi (ả)   •   x = Ngã (ã)\nj = Nặng (ạ)  •   z = Xóa dấu\n\nDấu chữ:\naa = â  •  ee = ê  •  oo = ô\naw = ă  •  ow = ơ  •  uw = ư\ndd = đ\nw = ư   •  [ = ơ   •  ] = ư\n\nGõ phím dấu hai lần để huỷ:\n       ass → as   •   ww → w\n\nVí dụ: Vieetj Nam → Việt Nam\n       dduwowngf → đường\n       hoaf → hòa</string>
+
+    <!-- Kiểu gõ -->
+    <string name="input_method_title">Kiểu gõ</string>
+    <string name="input_method_telex">Telex</string>
+    <string name="input_method_vni">VNI</string>
+    <string name="input_method_hint">Đổi kiểu gõ có hiệu lực ngay, không cần bật lại bàn phím.</string>
 
     <!-- Phiên bản -->
     <string name="version_label">Phiên bản %1$s (bản dựng %2$d)</string>

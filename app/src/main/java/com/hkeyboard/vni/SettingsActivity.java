@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,6 +21,7 @@ import java.io.File;
  * <p>Hiển thị:
  * <ul>
  *   <li>trạng thái bàn phím (đã bật / đã chọn làm mặc định);</li>
+ *   <li>lựa chọn kiểu gõ Telex / VNI và bảng quy tắc tương ứng;</li>
  *   <li>số hiệu phiên bản đang cài;</li>
  *   <li>nút kiểm tra và tự cập nhật từ GitHub Releases.</li>
  * </ul>
@@ -30,6 +32,8 @@ public class SettingsActivity extends AppCompatActivity {
     private TextView tvImeSelected;
     private TextView tvUpdateStatus;
     private Button btnCheckUpdate;
+    private TextView tvRulesTitle;
+    private TextView tvRules;
 
     private UpdateChecker updateChecker;
 
@@ -43,6 +47,21 @@ public class SettingsActivity extends AppCompatActivity {
         TextView tvVersion = findViewById(R.id.tv_version);
         tvUpdateStatus = findViewById(R.id.tv_update_status);
         btnCheckUpdate = findViewById(R.id.btn_check_update);
+        tvRulesTitle = findViewById(R.id.tv_rules_title);
+        tvRules = findViewById(R.id.tv_rules);
+
+        // Kiểu gõ: lưu vào ImePrefs, HKeyboardService áp dụng ngay.
+        RadioGroup rgInputMethod = findViewById(R.id.rg_input_method);
+        UnikeyEngine.InputMethod current = ImePrefs.inputMethod(this);
+        rgInputMethod.check(current == UnikeyEngine.InputMethod.TELEX
+                ? R.id.rb_telex : R.id.rb_vni);
+        showRules(current);
+        rgInputMethod.setOnCheckedChangeListener((group, checkedId) -> {
+            UnikeyEngine.InputMethod method = (checkedId == R.id.rb_telex)
+                    ? UnikeyEngine.InputMethod.TELEX : UnikeyEngine.InputMethod.VNI;
+            ImePrefs.setInputMethod(this, method);
+            showRules(method);
+        });
 
         updateChecker = new UpdateChecker(this);
 
@@ -75,6 +94,13 @@ public class SettingsActivity extends AppCompatActivity {
         updateStatus();
         // Tự kiểm tra bản mới mỗi khi mở app; im lặng nếu đã là bản mới nhất.
         checkForUpdate(true);
+    }
+
+    /** Hiện bảng quy tắc gõ của kiểu gõ đang chọn. */
+    private void showRules(UnikeyEngine.InputMethod method) {
+        boolean telex = method == UnikeyEngine.InputMethod.TELEX;
+        tvRulesTitle.setText(telex ? R.string.telex_rules_title : R.string.vni_rules_title);
+        tvRules.setText(telex ? R.string.telex_rules : R.string.vni_rules);
     }
 
     /**

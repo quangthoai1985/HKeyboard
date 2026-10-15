@@ -40,6 +40,9 @@ tools/ref/*.exp
 tools/ref/*.exe
 tools/ref/*_wrap.cpp
 tools/ref/out_*.txt
+tools/ref/ref
+# Sinh lai bang: java tools/GenTelexCorpus.java tools/ref/corpus_telex.txt
+tools/ref/corpus_telex.txt
 tools/spec.txt
 
 # =====================================================================

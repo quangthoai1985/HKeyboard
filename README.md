@@ -1,11 +1,13 @@
 # HKeyboard VNI
 
-Bàn phím tiếng Việt kiểu **VNI** cho Android, dành cho bàn phím rời (đã thử với
-**Huawei Smart Keyboard**). Bộ gõ là bản port sang Java của **UniKey 1.0.4** —
-đã được kiểm chứng là cho kết quả **giống hệt** bản gốc.
+Bàn phím tiếng Việt kiểu **Telex** và **VNI** cho Android, dành cho bàn phím rời
+(đã thử với **Huawei Smart Keyboard**). Bộ gõ là bản port sang Java của
+**UniKey 1.0.4** — đã được kiểm chứng là cho kết quả **giống hệt** bản gốc ở cả
+hai kiểu gõ.
 
 - Không hiện bàn phím ảo (view cao 0dp) → chỉ dùng bàn phím vật lý.
 - Quy tắc gõ lấy trọn từ UniKey, không dùng quy tắc tự chế.
+- Chọn kiểu gõ **Telex / VNI** ngay trong app, có hiệu lực tức thì.
 - Hiển thị số phiên bản và **tự phát hiện + cập nhật** bản mới từ GitHub Releases.
 
 ## Cài đặt
@@ -14,12 +16,46 @@ Bàn phím tiếng Việt kiểu **VNI** cho Android, dành cho bàn phím rời
 2. Mở file để cài (cho phép "Cài đặt từ nguồn không xác định" nếu được hỏi).
 3. Mở app **HKeyboard VNI** → bấm **Mở cài đặt bàn phím** → bật HKeyboard VNI.
 4. Quay lại app → bấm **Chọn HKeyboard VNI** → chọn làm bàn phím mặc định.
-5. Kết nối bàn phím rời và gõ.
+5. Chọn **Kiểu gõ**: Telex hoặc VNI (mặc định VNI).
+6. Kết nối bàn phím rời và gõ.
 
 App sẽ tự kiểm tra bản mới mỗi lần mở. Khi có bản mới, bấm **Cập nhật ngay** để
 tải và cài trực tiếp.
 
-## Quy tắc gõ
+## Quy tắc gõ — Telex
+
+Theo đúng `TelexMethodMapping` của UniKey.
+
+Dấu thanh:
+
+| Phím | Dấu | Ví dụ |
+|---|---|---|
+| `s` | sắc | `as` → á |
+| `f` | huyền | `af` → à |
+| `r` | hỏi | `ar` → ả |
+| `x` | ngã | `ax` → ã |
+| `j` | nặng | `aj` → ạ |
+| `z` | xoá dấu | `asz` → a |
+
+Dấu chữ:
+
+| Phím | Kết quả | Ghi chú |
+|---|---|---|
+| `aa` `ee` `oo` | â ê ô | |
+| `aw` `ow` `uw` | ă ơ ư | `uow` → ươ |
+| `dd` | đ | |
+| `w` | ư | khi đứng riêng: `w` → ư, `tw` → tư |
+| `[` `]` | ơ ư | `{` `}` → Ơ Ư |
+
+Gõ phím dấu hai lần để huỷ: `ass` → as, `aaa` → aa, `ww` → w, `[[` → [.
+
+Ví dụ: `Vieetj Nam` → Việt Nam, `dduwowngf` → đường, `chuwowng trinhf` →
+chương trình, `nuocws` → nước (dấu gõ sau cùng cũng được).
+
+> Lưu ý (hành vi gốc của UniKey): từ tiếng Anh bắt đầu bằng `w` sẽ thành `ư`
+> (`window` → ưindow). Gõ `ww` để ra chữ `w`.
+
+## Quy tắc gõ — VNI
 
 Dấu thanh:
 
@@ -44,23 +80,25 @@ Dấu chữ:
 Ví dụ: `Vie65t Nam` → Việt Nam, `chu7o7ng tri2nh` → chương trình,
 `d9a85c bie65t` → đặc biệt.
 
-### Lưu ý về kiểm tra chính tả
+## Lưu ý về kiểm tra chính tả
 
 App dùng **đúng bộ tuỳ chọn mặc định của UniKey**:
 `freeMarking = 1`, `modernStyle = 0`, `spellCheckEnabled = 1`.
 
 Vì bật kiểm tra chính tả, một số tổ hợp **không hợp lệ trong tiếng Việt** sẽ
-không được thêm dấu — đây chính là hành vi của UniKey gốc, không phải lỗi:
+không được thêm dấu — đây chính là hành vi của UniKey gốc, không phải lỗi
+(kết quả lấy từ chính bộ máy C++ của UniKey):
 
-| Gõ | Kết quả | Giải thích |
-|---|---|---|
-| `d9u7o7ng` | `đương` | âm tiết `ương` không hợp lệ → không thêm dấu huyền |
-| `ngu7o7i` | `ngươi` | tương tự |
-| `java8` | `java8` | không bị biến thành `javă` |
-| `cac2` | `cac2` | `c` cuối không nhận dấu huyền |
+| Kiểu gõ | Gõ | Kết quả | Nếu tắt kiểm tra chính tả |
+|---|---|---|---|
+| VNI | `java8` | `java8` | `javă` |
+| VNI | `hello1` | `hello1` | `helló` |
+| VNI | `cac2` | `cac2` (`c` cuối không nhận dấu huyền) | `cac2` |
+| Telex | `class` | `class` | `clas` |
+| Telex | `javaw` | `javaw` | `javă` |
+| Telex | `cacf` | `cacf` | `cacf` |
 
-Nếu muốn `d9u7o7ng` → `đường`, sửa `options.spellCheckEnabled = false` trong
-`HKeyboardService`. Đánh đổi: khi đó `java8` sẽ thành `javă`.
+Muốn tắt, sửa `options.spellCheckEnabled = false` trong `HKeyboardService`.
 
 ## Phát triển
 
@@ -116,10 +154,11 @@ nhất, được Gradle đọc khi build và script tự sửa khi phát hành.
 ```
 app/src/main/java/com/hkeyboard/vni/
 ├── HKeyboardService.java   IME service, chuyển phím cho engine
-├── UnikeyEngine.java       Bộ gõ — port 1:1 từ UniKey 1.0.4
+├── UnikeyEngine.java       Bộ gõ Telex + VNI — port 1:1 từ UniKey 1.0.4
+├── ImePrefs.java           Lưu kiểu gõ đang chọn (dùng chung app ↔ service)
 ├── KeyCharMap.java         Bảng keycode → ký tự (dự phòng)
 ├── UpdateChecker.java      Kiểm tra/tải cập nhật từ GitHub Releases
-└── SettingsActivity.java   Màn hình thiết lập + nút cập nhật
+└── SettingsActivity.java   Màn hình thiết lập: kiểu gõ, nút cập nhật
 ```
 
 ### Hợp đồng engine ↔ service
@@ -139,7 +178,17 @@ thì chữ sẽ mất và trạng thái bị lệch.
 ## Kiểm chứng bộ gõ
 
 Port lại mã C++ sang Java rất dễ sai ở chi tiết nhỏ, nên dự án có bộ kiểm chứng
-**đối chiếu trực tiếp với mã C++ gốc**.
+**đối chiếu trực tiếp với mã C++ gốc**: VNI trên 68.495 chuỗi phím, Telex trên
+397.156 chuỗi phím.
+
+Trên Linux/macOS (cần g++, python3, JDK):
+
+```bash
+tools/diff-test.sh          # VNI + Telex
+tools/diff-test.sh --all    # thêm các chế độ NOSPELL / MODERN / NOMARK / CapsLock
+```
+
+Trên Windows:
 
 ```powershell
 # 1. Tai ma nguon UniKey (chi mot lan)
@@ -149,17 +198,13 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools\fetch-unikey.ps1
 cd tools\ref
 build.bat
 
-# 3. Doi chieu Java voi C++ tren 68.495 chuoi phim
+# 3. Doi chieu Java voi C++
 cd ..\..
 powershell -NoProfile -ExecutionPolicy Bypass -File tools\diff-test.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File tools\diff-test.ps1 -Telex
 ```
 
-Kết quả mong đợi:
-
-```
-CPP: 68495 lines | JAVA: 68495 lines
-=== NO DIFFERENCES (68495 lines) ===
-```
+Kết quả mong đợi: không có khác biệt nào.
 
 Chi tiết kỹ thuật (kỹ thuật "wrapper", cách chạy từng chế độ): xem
 [`tools/README.md`](tools/README.md).
@@ -172,5 +217,5 @@ Phần **ứng dụng Android** của dự án này phát hành theo **GNU GPL v
 `UnikeyEngine.java` là **tác phẩm phái sinh** từ UniKey 1.0.4 của Pham Kim Long
 và các cộng tác viên, phát hành theo **GNU LGPL v2**. Vì vậy mã nguồn của bộ gõ
 trong dự án này cũng thuộc LGPL v2. Mã nguồn UniKey gốc **không** được đưa vào
-repo (xem [`NOTICE`](NOTICE)); dùng `tools/fetch-unikey.ps1` để tải về khi cần
-chạy kiểm chứng.
+repo (xem [`NOTICE`](NOTICE)); dùng `tools/fetch-unikey.ps1` (hoặc
+`tools/diff-test.sh`) để tải về khi cần chạy kiểm chứng.
