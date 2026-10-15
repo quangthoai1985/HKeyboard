@@ -104,8 +104,9 @@ Muốn tắt, sửa `options.spellCheckEnabled = false` trong `HKeyboardService`
 
 ### Yêu cầu
 
-- JDK 17 (JDK đi kèm Android Studio là đủ)
+- JDK 17 trở lên (JDK đi kèm Android Studio là đủ)
 - Android SDK, compileSdk 34
+- Gradle 9.7.1 + Android Gradle Plugin 9.4.1 (wrapper tự tải)
 - `JAVA_HOME` trỏ tới JDK
 
 ### Build
@@ -150,8 +151,11 @@ Sao lưu file `.jks` và mật khẩu ra **ít nhất hai nơi** (USB + Google D
 ### Chạy unit test
 
 ```powershell
-.\gradlew.bat testReleaseUnitTest
+.\gradlew.bat testDebugUnitTest
 ```
+
+(Từ AGP 9, unit test chỉ được tạo cho bản debug nên không còn
+`testReleaseUnitTest`.)
 
 ### Phát hành phiên bản mới
 

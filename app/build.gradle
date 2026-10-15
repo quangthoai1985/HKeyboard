@@ -1,3 +1,9 @@
+import com.android.build.api.artifact.ArtifactTransformationRequest
+import com.android.build.api.artifact.SingleArtifact
+
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
+
 plugins {
     id 'com.android.application'
 }
@@ -32,15 +38,15 @@ def githubRepo = (project.findProperty('githubRepo') ?: 'quangthoai1985/HKeyboar
 def githubRepoParts = githubRepo.split('/')
 
 android {
-    namespace 'com.hkeyboard.vni'
-    compileSdk 34
+    namespace = 'com.hkeyboard.vni'
+    compileSdk = 34
 
     defaultConfig {
-        applicationId "com.hkeyboard.vni"
-        minSdk 26
-        targetSdk 34
-        versionCode appVersionCode
-        versionName appVersionName
+        applicationId = "com.hkeyboard.vni"
+        minSdk = 26
+        targetSdk = 34
+        versionCode = appVersionCode
+        versionName = appVersionName
 
         buildConfigField 'String', 'GITHUB_REPO_OWNER', "\"${githubRepoParts[0]}\""
         buildConfigField 'String', 'GITHUB_REPO_NAME', "\"${githubRepoParts.length > 1 ? githubRepoParts[1] : 'HKeyboard'}\""
@@ -49,10 +55,10 @@ android {
     signingConfigs {
         release {
             if (hasReleaseKeystore) {
-                storeFile rootProject.file(keystoreProps.getProperty('storeFile'))
-                storePassword keystoreProps.getProperty('storePassword')
-                keyAlias keystoreProps.getProperty('keyAlias')
-                keyPassword keystoreProps.getProperty('keyPassword')
+                storeFile = rootProject.file(keystoreProps.getProperty('storeFile'))
+                storePassword = keystoreProps.getProperty('storePassword')
+                keyAlias = keystoreProps.getProperty('keyAlias')
+                keyPassword = keystoreProps.getProperty('keyPassword')
             }
         }
     }
@@ -60,27 +66,19 @@ android {
     buildTypes {
         release {
             // Ky bang keystore rieng neu co; neu khong thi dung chu ky debug.
-            signingConfig hasReleaseKeystore ? signingConfigs.release : signingConfigs.debug
-            minifyEnabled false
+            signingConfig = hasReleaseKeystore ? signingConfigs.release : signingConfigs.debug
+            minifyEnabled = false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 
     buildFeatures {
-        buildConfig true
-    }
-
-    applicationVariants.all { variant ->
-        variant.outputs.all {
-            if (variant.buildType.name == 'release') {
-                outputFileName = "Hkeyboard.apk"
-            }
-        }
+        buildConfig = true
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     testOptions {
@@ -89,6 +87,48 @@ android {
             // (moi phuong thuc khac tra ve gia tri mac dinh).
             returnDefaultValues = true
         }
+    }
+}
+
+// =====================================================================
+// Dat ten APK release la Hkeyboard.apk.
+// AGP 9 da bo API cu (applicationVariants / outputFileName), nen dung Variant
+// API moi: bien doi artifact APK bang mot task chep APK sang file ten moi.
+// AGP coi file chep ra la APK cuoi cung (assembleRelease tu chay task nay).
+// =====================================================================
+abstract class RenameApkTask extends DefaultTask {
+    @InputFiles
+    abstract DirectoryProperty getApkFolder()
+
+    @OutputDirectory
+    abstract DirectoryProperty getOutFolder()
+
+    @Input
+    abstract Property<String> getApkName()
+
+    @Internal
+    abstract Property<ArtifactTransformationRequest<RenameApkTask>> getTransformationRequest()
+
+    @TaskAction
+    void rename() {
+        transformationRequest.get().submit(this) { builtArtifact ->
+            def input = new File(builtArtifact.outputFile)
+            def output = new File(outFolder.get().asFile, apkName.get())
+            Files.copy(input.toPath(), output.toPath(), StandardCopyOption.REPLACE_EXISTING)
+            output
+        }
+    }
+}
+
+androidComponents {
+    onVariants(selector().withBuildType('release')) { variant ->
+        def renameTask = tasks.register("rename${variant.name.capitalize()}Apk", RenameApkTask) {
+            apkName.set('Hkeyboard.apk')
+        }
+        def request = variant.artifacts.use(renameTask)
+                .wiredWithDirectories({ it.apkFolder }, { it.outFolder })
+                .toTransformMany(SingleArtifact.APK.INSTANCE)
+        renameTask.configure { transformationRequest.set(request) }
     }
 }
 
