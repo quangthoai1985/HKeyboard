@@ -2,7 +2,8 @@ param(
     [switch]$Bump,              # tang versionCode (+1) va versionName (minor +1) truoc khi build
     [string]$VersionName = '',  # dat versionName cu the, vi du 2.2
     [switch]$SkipPush,          # chi build, khong push/tag/release
-    [switch]$Draft              # tao release o dang nhap (draft)
+    [switch]$Draft,             # tao release o dang nhap (draft)
+    [string]$NotesFile = ''     # ghi chu phat hanh (mac dinh: tools\release-notes\vX.Y.md neu co)
 )
 $ErrorActionPreference = 'Stop'
 # =====================================================================
@@ -170,8 +171,16 @@ Build tu dong bang ``tools/release.ps1``.
 2. Mo file de cai (cho phep "Cai dat tu nguon khong xac dinh" neu duoc hoi).
 3. Neu ban dang dung ban cu, app se tu bao co ban moi o lan mo tiep theo.
 "@
-$notesFile = Join-Path $env:TEMP "hkeyboard-$tag-notes.md"
-[System.IO.File]::WriteAllText($notesFile, $notes, [System.Text.UTF8Encoding]::new($false))
+$repoNotes = Join-Path $root "tools\release-notes\$tag.md"
+if ($NotesFile -ne '') {
+    $notesFile = $NotesFile
+} elseif (Test-Path $repoNotes) {
+    $notesFile = $repoNotes
+} else {
+    $notesFile = Join-Path $env:TEMP "hkeyboard-$tag-notes.md"
+    [System.IO.File]::WriteAllText($notesFile, $notes, [System.Text.UTF8Encoding]::new($false))
+}
+"==> Ghi chu phat hanh: $notesFile"
 
 $ghArgs = @('release', 'create', $tag, $apkPath,
             '--title', "HKeyboard $tag",

@@ -104,7 +104,7 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     /**
-     * Check and display the current status of HKeyboard VNI:
+     * Check and display the current status of HKeyboard:
      * - Whether it's enabled in system settings
      * - Whether it's selected as the default IME
      */

@@ -1,4 +1,4 @@
-# HKeyboard VNI
+# HKeyboard
 
 Bàn phím tiếng Việt kiểu **Telex** và **VNI** cho Android, dành cho bàn phím rời
 (đã thử với **Huawei Smart Keyboard**). Bộ gõ là bản port sang Java của
@@ -14,8 +14,8 @@ hai kiểu gõ.
 
 1. Tải `Hkeyboard.apk` ở mục [**Releases**](../../releases/latest).
 2. Mở file để cài (cho phép "Cài đặt từ nguồn không xác định" nếu được hỏi).
-3. Mở app **HKeyboard VNI** → bấm **Mở cài đặt bàn phím** → bật HKeyboard VNI.
-4. Quay lại app → bấm **Chọn HKeyboard VNI** → chọn làm bàn phím mặc định.
+3. Mở app **HKeyboard** → bấm **Mở cài đặt bàn phím** → bật HKeyboard.
+4. Quay lại app → bấm **Chọn HKeyboard** → chọn làm bàn phím mặc định.
 5. Chọn **Kiểu gõ**: Telex hoặc VNI (mặc định VNI).
 6. Kết nối bàn phím rời và gõ.
 
