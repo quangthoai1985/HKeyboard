@@ -130,6 +130,23 @@ keyPassword=...
 > ⚠️ Mất file `.jks` hoặc mật khẩu = **không bao giờ cập nhật OTA được nữa**,
 > người dùng phải gỡ app rồi cài lại. Hãy sao lưu cả hai.
 
+### Tạo keystore
+
+Chỉ làm **một lần** (hoặc khi đã mất keystore cũ — khi đó người dùng bản cũ
+phải gỡ app rồi cài lại):
+
+```powershell
+mkdir keystore
+& "C:\Program Files\Android\Android Studio\jbr\bin\keytool.exe" -genkeypair -v `
+    -keystore keystore\hkeyboard-release.jks -alias hkeyboard `
+    -keyalg RSA -keysize 2048 -validity 10000 `
+    -dname "CN=HKeyboard, O=HKeyboard, C=VN"
+```
+
+Rồi tạo `keystore.properties` theo mẫu ở trên (`keyPassword` = `storePassword`
+vì keytool mặc định tạo kho PKCS12). Cả hai file đã có trong `.gitignore`.
+Sao lưu file `.jks` và mật khẩu ra **ít nhất hai nơi** (USB + Google Drive...).
+
 ### Chạy unit test
 
 ```powershell
