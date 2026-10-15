@@ -105,6 +105,25 @@ $tag = "v$name"
 "==> Phat hanh $tag (versionCode $code)"
 
 # ---------------------------------------------------------------------
+# 1b. Bat buoc co keystore release
+# ---------------------------------------------------------------------
+# Thieu keystore.properties thi Gradle tu roi ve chu ky debug - APK do KHONG
+# cai de len ban da phat hanh duoc. Dung lai thay vi phat hanh nham.
+$keystoreProps = Join-Path $root 'keystore.properties'
+if (-not $SkipPush) {
+    if (-not (Test-Path $keystoreProps)) {
+        throw "Khong thay $keystoreProps - khong the ky ban release. Xem muc 'Tao keystore' trong README.md."
+    }
+    $storeLine = Get-Content $keystoreProps | Where-Object { $_ -match '^\s*storeFile\s*=' } | Select-Object -First 1
+    if (-not $storeLine) { throw "keystore.properties thieu dong storeFile=" }
+    $storeFile = Join-Path $root (($storeLine -split '=', 2)[1].Trim())
+    if (-not (Test-Path $storeFile)) {
+        throw "Khong thay file keystore: $storeFile"
+    }
+    "==> Ky bang keystore: $storeFile"
+}
+
+# ---------------------------------------------------------------------
 # 2. Build APK
 # ---------------------------------------------------------------------
 "==> Dang build APK..."
